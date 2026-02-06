@@ -1,0 +1,295 @@
+/* -------- GLOBAL -------- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+body {
+  background: linear-gradient(180deg, #f4fdf7, #eef7f1);
+  color: #333;
+}
+
+/* -------- NAVBAR -------- */
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 8%;
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  width: 45px;
+  border-radius: 50%;
+  border: 2px solid #4caf50;
+}
+
+.back-btn {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+/* -------- RESULT LAYOUT -------- */
+.result-container {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 40px;
+  padding: 70px 8%;
+}
+
+/* -------- PREDICTION CARD -------- */
+.prediction-card {
+  background: #fff;
+  border-radius: 22px;
+  padding: 34px;
+  box-shadow: 0 18px 35px rgba(0, 0, 0, 0.12);
+  position: relative;
+  animation: fadeUp 0.8s ease;
+}
+
+.badge {
+  position: absolute;
+  top: -14px;
+  right: 20px;
+  background: #2e7d32;
+  color: #fff;
+  padding: 6px 14px;
+  font-size: 12px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.prediction-card h2 {
+  color: #1b5e20;
+  margin-bottom: 20px;
+  font-size: 30px;
+}
+
+.image-box img {
+  width: 100%;
+  border-radius: 18px;
+  margin-bottom: 22px;
+}
+
+.prediction-details p {
+  display: flex;
+  justify-content: space-between;
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.disease {
+  color: #c62828;
+  font-weight: 700;
+}
+
+/* -------- CONFIDENCE BAR -------- */
+.confidence-wrapper {
+  margin-top: 20px;
+}
+
+.confidence-text {
+  font-size: 14px;
+  margin-bottom: 6px;
+  color: #555;
+}
+
+.confidence-bar {
+  height: 10px;
+  background: #e0e0e0;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.confidence-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #66bb6a, #2e7d32);
+  transition: width 1s ease-in-out;
+}
+
+/* -------- STATUS -------- */
+.status {
+  margin-top: 22px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.status.success {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status.warning {
+  background: #fff8e1;
+  color: #f57c00;
+}
+
+/* -------- EXPLANATION -------- */
+.explanation {
+  margin-top: 24px;
+  background: #f7fdf8;
+  padding: 18px;
+  border-radius: 14px;
+}
+
+.explanation h4 {
+  margin-bottom: 6px;
+  color: #2e7d32;
+}
+
+/* -------- CHATBOT CARD -------- */
+.chatbot-card {
+  background: #fff;
+  border-radius: 22px;
+  padding: 30px;
+  box-shadow: 0 18px 35px rgba(0, 0, 0, 0.12);
+  animation: fadeUp 1s ease;
+}
+
+.chatbot-card h2 {
+  color: #1b5e20;
+  margin-bottom: 14px;
+  font-size: 26px;
+}
+
+/* -------- LANGUAGE SELECTOR -------- */
+.language-selector {
+  margin-bottom: 18px;
+}
+
+.language-selector label {
+  font-weight: 500;
+  margin-right: 8px;
+}
+
+.language-selector select {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+/* -------- LLM CONTENT (BIG, CLEAN, NO BOX) -------- */
+.llm-content {
+  font-size: 17px;
+  line-height: 1.9;
+  color: #2e2e2e;
+}
+
+/* Headings from LLM */
+.llm-content strong {
+  display: block;
+  margin-top: 22px;
+  margin-bottom: 6px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1b5e20;
+}
+
+/* -------- CHAT SECTION -------- */
+.chat-section {
+  margin-top: 30px;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 20px;
+}
+
+#chatMessages {
+  max-height: 260px;
+  overflow-y: auto;
+  margin-bottom: 14px;
+}
+
+.chat-message {
+  margin-bottom: 10px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.chat-message.user {
+  background: #e3f2fd;
+  align-self: flex-end;
+}
+
+.chat-message.ai {
+  background: #f1f8e9;
+}
+
+/* -------- CHAT INPUT -------- */
+.chat-input {
+  display: flex;
+  gap: 10px;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.chat-input button {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: none;
+  background: #2e7d32;
+  color: #fff;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.chat-input button:hover {
+  background: #1b5e20;
+}
+
+.mic-btn {
+  background: #1565c0;
+}
+
+.mic-btn:hover {
+  background: #0d47a1;
+}
+
+/* -------- FOOTER -------- */
+footer {
+  text-align: center;
+  padding: 28px;
+  background: #2e7d32;
+  color: #fff;
+}
+
+/* -------- ANIMATION -------- */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* -------- RESPONSIVE -------- */
+@media (max-width: 900px) {
+  .result-container {
+    grid-template-columns: 1fr;
+  }
+}
