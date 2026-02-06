@@ -1,3 +1,4 @@
+
 <!-- ========================= result.html ========================= -->
 <!DOCTYPE html>
 <html lang="en">
@@ -19,54 +20,99 @@
         <img src="/static/images/logo.png" class="logo" />
         <h2>CropGuard AI</h2>
       </div>
-      <a href="/" class="back-btn"
-        ><i class="fa-solid fa-arrow-left"></i> Home</a
-      >
+      <a href="/" class="back-btn">
+        <i class="fa-solid fa-arrow-left"></i> Home
+      </a>
     </nav>
 
-    <section class="result-container">
+    <main class="container">
       <div class="prediction-card">
-        <h2>Prediction</h2>
-
+        <h2>Diagnosis Result</h2>
         <img src="{{ image_url }}" class="result-image" />
-
         <p><strong>Crop:</strong> {{ crop }}</p>
-        <p class="disease"><strong>Disease:</strong> {{ disease }}</p>
-
-        <div class="confidence">
-          Confidence: <strong>{{ confidence }}%</strong>
+        <p class="disease"><strong>Prediction:</strong> {{ disease }}</p>
+        <div class="confidence-bar">
+          <div class="confidence-fill" style="width: {{ confidence }}%;"></div>
         </div>
+        <p class="confidence-text">Confidence: {{ confidence }}%</p>
       </div>
 
-      <div class="chatbot-card">
-        <h2>AI Assistant 🤖</h2>
+      <div class="assistant-card">
+        <div class="assistant-header">
+          <h2>AI Assistant</h2>
+          <div class="language-selector">
+            <select id="languageSelect" onchange="regenerateResponse()">
+              {% for lang in languages %}
+              <option value="{{ lang.code }}" {% if lang.code == 'en' %}selected{% endif %}>{{ lang.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
 
-        <select id="languageSelect">
-          <option value="en">English</option>
-          <option value="hi">हिंदी</option>
-          <option value="mr">मराठी</option>
-        </select>
-
-        <div class="llm-content" id="llmContent">
+        <div id="llmResponse" class="llm-content">
           {{ llm_response | safe }}
         </div>
 
-        <div class="chat-box" id="chatMessages"></div>
+        <div id="chatHistory" class="chat-history"></div>
 
-        <div class="chat-input">
-          <input id="chatText" placeholder="Ask a follow-up..." />
-          <button onclick="sendChat()">Send</button>
-          <button disabled title="Voice coming soon">
+        <div class="chat-input-area">
+          <input
+            type="text"
+            id="chatInput"
+            placeholder="Ask a follow-up question..."
+          />
+          <button onclick="sendChatMessage()">
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
+          <button id="recordBtn">
             <i class="fa-solid fa-microphone"></i>
           </button>
         </div>
       </div>
-    </section>
+    </main>
 
     <script>
-      const CHAT_CONTEXT = JSON.parse('{{ chat_context | default({}, true) | tojson | safe }}');
-    </script> 
+      // Regenerates the LLM response when the language is changed
+      async function regenerateResponse() {
+        const language = document.getElementById("languageSelect").value;
+        const response = await fetch("/regenerate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ language }),
+        });
+        const data = await response.json();
+        document.getElementById("llmResponse").innerHTML = data.response;
+      }
 
-    <script src="/static/js/script.js"></script>
+      // Sends a chat message to the backend
+      async function sendChatMessage() {
+        const input = document.getElementById("chatInput");
+        const message = input.value.trim();
+        if (!message) return;
+
+        const language = document.getElementById("languageSelect").value;
+        const response = await fetch("/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message, language }),
+        });
+        const data = await response.json();
+
+        // Append user and AI messages to chat history
+        appendMessage("user", message);
+        appendMessage("assistant", data.reply);
+        input.value = "";
+      }
+
+      // Appends a message to the chat history UI
+      function appendMessage(role, content) {
+        const chatHistory = document.getElementById("chatHistory");
+        const messageDiv = document.createElement("div");
+        messageDiv.className = `chat-message ${role}`;
+        messageDiv.innerHTML = content;
+        chatHistory.appendChild(messageDiv);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+      }
+    </script>
   </body>
 </html>

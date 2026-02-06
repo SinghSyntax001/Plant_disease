@@ -9,7 +9,7 @@ import os
 import uuid
 
 from backend.inference import predict
-from backend.llm import generate_cure
+from backend.llm import generate_response
 from backend.stt import speech_to_text
 
 app = FastAPI(title="CropGuard AI")
@@ -22,6 +22,8 @@ templates = Jinja2Templates(directory="templates")
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+# Note: In-memory storage is not suitable for production.
+# Replace with a persistent solution like a database or session management.
 SESSION_PREDICTION = {}
 SESSION_CHAT = []
 
@@ -58,19 +60,7 @@ async def upload_image(
     SESSION_PREDICTION["data"] = prediction
     SESSION_CHAT.clear()
 
-    confidence_pct = int(prediction["confidence"] * 100)
-
-    if prediction["crop_uncertain"]:
-        llm_response = (
-            "<strong>Crop Identification Uncertain:</strong><br>"
-            "The AI is not confident about the crop type.<br><br>"
-            "<strong>What You Can Do:</strong><br>"
-            "Please upload a clearer image with the full leaf visible "
-            "or confirm the crop manually."
-        )
-    else:
-        llm = generate_cure(prediction)
-        llm_response = llm["response"]
+    llm_response = generate_response(prediction)
 
     return templates.TemplateResponse(
         "result.html",
@@ -78,12 +68,26 @@ async def upload_image(
             "request": request,
             "crop": prediction["predicted_crop"],
             "disease": prediction["predicted_disease"],
-            "confidence": confidence_pct,
+            "confidence": int(prediction["confidence"] * 100),
             "image_url": f"/uploads/{filename}",
             "llm_response": llm_response,
-            "chat_context": []
+            "chat_context": [],
+            "languages": list(SESSION_PREDICTION.get("supported_languages", {}).values())
         }
     )
+
+
+@app.post("/regenerate")
+async def regenerate(payload: dict):
+    if "data" not in SESSION_PREDICTION:
+        return JSONResponse({"error": "No prediction context found"}, status_code=400)
+
+    language = payload.get("language", "en")
+    llm_response = generate_response(
+        SESSION_PREDICTION["data"],
+        language=language
+    )
+    return {"response": llm_response}
 
 
 @app.post("/chat")
@@ -91,25 +95,23 @@ async def chat(payload: dict):
     if "data" not in SESSION_PREDICTION:
         return JSONResponse({"reply": "No prediction context available"}, status_code=400)
 
-    if SESSION_PREDICTION["data"].get("crop_uncertain"):
-        return {
-            "reply": "Crop type is unclear. Please upload a clearer image before asking treatment questions."
-        }
-
     message = payload.get("message", "")
     language = payload.get("language", "en")
 
+    # Append user message to chat history
     SESSION_CHAT.append({"role": "user", "content": message})
 
-    llm = generate_cure(
+    # Generate assistant response
+    llm_response = generate_response(
         prediction=SESSION_PREDICTION["data"],
         chat_history=SESSION_CHAT,
         language=language
     )
 
-    SESSION_CHAT.append({"role": "assistant", "content": llm["response"]})
+    # Append assistant response to chat history
+    SESSION_CHAT.append({"role": "assistant", "content": llm_response})
 
-    return {"reply": llm["response"]}
+    return {"reply": llm_response}
 
 
 @app.post("/stt")
